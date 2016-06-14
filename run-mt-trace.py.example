@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+import sys
+import subprocess
+
+def error(msg):
+	print 'Error: ' + msg
+	sys.exit
+	
+def monitor_invoke(command):
+        print command
+        run = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	while True:
+		out = run.stdout.read(1)
+		if out == '' and run.poll() != None:
+			break;
+		if out != '':
+			sys.stdout.write(out)
+			sys.stdout.flush()
+	return True	
+
+REMOTE_USER = 'yilin'
+RSYNC_DIR = '/home/{}/rust_gc/immix_rust_new/'.format(REMOTE_USER)
+MACHINE = 'rat.moma'
+
+#./run-mt-trace.py 1 8
+
+if len(sys.argv) != 5:
+	error("usage: ./run-mt-trace.py 2000M 20 1 8")
+
+heap = sys.argv[1]
+invocations = int(sys.argv[2])
+gc_threads_min = int(sys.argv[3])
+gc_threads_max = int(sys.argv[4])
+
+print '###heap = ' + heap
+print '###invocations = ' + str(invocations)
+print '###gc_threads_min = ' + str(gc_threads_min)
+print '###gc_threads_max = ' + str(gc_threads_max)
+
+print 'rsync...'
+remote_path = "{}@{}:{}".format(REMOTE_USER, MACHINE, RSYNC_DIR)
+ret = subprocess.call(["rsync", "-rav", "-I", "--delete", "--exclude=target", "--exclude=.hg", ".", remote_path])
+if ret != 0:
+	error('failed to rsync')
+	
+build = 'ssh -t {}@{} "cd {}; rm -r target; cargo build --release --features \"mt-trace\""'.format(REMOTE_USER, MACHINE, RSYNC_DIR)
+succ = monitor_invoke(build)
+if not succ:
+	error('failed to build mt-trace')
+print
+	
+for n_gc_threads in range(gc_threads_min, gc_threads_max + 1):
+	print 'Running with %d gc threads' % (n_gc_threads)
+	print
+
+	for invocation in range(0, invocations):
+		print 'Invocation %d' % (invocation)
+		build = 'ssh -t {}@{} "cd {}; HEAP_SIZE={} N_GCTHREADS={} ./target/release/hello_world"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, heap, n_gc_threads)
+		succ = monitor_invoke(build)
+		if not succ:
+			error('failed to execute rust code')
+		print
+		print 'Invocation Finish'
+	
+	print 'Finish for current thread number'
+	print

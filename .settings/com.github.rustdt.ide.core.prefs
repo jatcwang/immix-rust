@@ -1,0 +1,3 @@
+build_targets=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<build_targets xmlns\="com.github.rustdt.ide.core">\n<target config\="crate\#no-tests" enabled\="true" options\="build --release --features &quot;mt-trace&quot;"/>\n<target config\="crate\#tests" enabled\="true"/>\n</build_targets>\n
+eclipse.preferences.version=1
+prj_auto_build_disabled=true

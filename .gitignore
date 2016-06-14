@@ -1,0 +1,7 @@
+.log
+^.*\.s$
+.out
+Cargo.lock
+target/*
+.project
+.setting

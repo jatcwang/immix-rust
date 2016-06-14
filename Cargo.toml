@@ -1,0 +1,32 @@
+[package]
+
+name = "hello_world"
+version = "0.0.1"
+authors = [ "Your name <you@example.com>" ]
+build = "build.rs"
+
+[build-dependencies.gcc]
+git = "https://github.com/alexcrichton/gcc-rs"
+
+[[bin]]
+
+name = "hello_world"
+
+[features]
+exhaust = []
+initobj = []
+mt-gcbench = ["mt-trace"]
+gcbench = ["mt-trace"]
+mark = []
+trace = []
+
+mt-trace = []
+
+[dependencies]
+time = "0.1.35"
+memmap = "0.2.2"
+libc = "0.2.2"
+lazy_static = "0.1.15"
+log = "0.3.5"
+aligned_alloc = "0.1.2"
+crossbeam = "0.2.8"
