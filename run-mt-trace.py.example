@@ -55,7 +55,7 @@ for n_gc_threads in range(gc_threads_min, gc_threads_max + 1):
 
 	for invocation in range(0, invocations):
 		print 'Invocation %d' % (invocation)
-		build = 'ssh -t {}@{} "cd {}; HEAP_SIZE={} N_GCTHREADS={} ./target/release/hello_world"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, heap, n_gc_threads)
+		build = 'ssh -t {}@{} "cd {}; HEAP_SIZE={} N_GCTHREADS={} ./target/release/immix-rust"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, heap, n_gc_threads)
 		succ = monitor_invoke(build)
 		if not succ:
 			error('failed to execute rust code')

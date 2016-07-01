@@ -59,9 +59,9 @@ for invocation in range(0, int(invocations)):
 	print '===Rust Version==='
 	build = ''
 	if feature == 'gcbench' or feature == 'mt-gcbench':
-		build = 'ssh -t {}@{} "cd {}; rm -r target; cargo rustc --release --features \"{}\" {}; HEAP_SIZE={} N_GCTHREADS=7 ./target/release/hello_world 7"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, feature, RUSTC_FLAGS, heap, bm_args)
+		build = 'ssh -t {}@{} "cd {}; rm -r target; cargo rustc --release --features \"{}\" {}; HEAP_SIZE={} N_GCTHREADS=7 ./target/release/immix-rust 7"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, feature, RUSTC_FLAGS, heap, bm_args)
 	else:
-		build = 'ssh -t {}@{} "cd {}; rm -r target; cargo rustc --release --features \"{}\" {}; HEAP_SIZE={} N_GCTHREADS=0 ./target/release/hello_world"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, feature, RUSTC_FLAGS, heap, bm_args)
+		build = 'ssh -t {}@{} "cd {}; rm -r target; cargo rustc --release --features \"{}\" {}; HEAP_SIZE={} N_GCTHREADS=0 ./target/release/immix-rust"'.format(REMOTE_USER, MACHINE, RSYNC_DIR, feature, RUSTC_FLAGS, heap, bm_args)
 	succ = monitor_invoke(build)
 	if not succ:
 		error('failed to execute rust code')
