@@ -77,11 +77,13 @@ extern "C" {
 }
 
 #[no_mangle]
+#[inline(always)]
 pub extern fn yieldpoint(mutator: &mut Box<ImmixMutatorLocal>) {
     mutator.yieldpoint()
 }
 
 #[no_mangle]
+#[inline(always)]
 pub extern fn alloc(mutator: &mut Box<ImmixMutatorLocal>, size: usize, align: usize) -> ObjectReference {
     let ret = mutator.alloc(size, align);
     trace!("allocated {} bytes: {:X}", size, ret);
