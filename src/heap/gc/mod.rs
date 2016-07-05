@@ -70,7 +70,8 @@ pub fn trigger_gc() {
 }
 
 extern crate libc;
-#[link(name = "gc_clib")]
+#[cfg(target_arch = "x86_64")]
+#[link(name = "gc_clib_x64")]
 extern "C" {
     pub fn malloc_zero(size: libc::size_t) -> *const libc::c_void;
     fn immmix_get_stack_ptr() -> Address;

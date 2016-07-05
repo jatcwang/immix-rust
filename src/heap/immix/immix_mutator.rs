@@ -190,6 +190,8 @@ impl ImmixMutatorLocal {
     }
     
     fn alloc_from_global(&mut self, size: usize, align: usize) -> Address {
+        trace!("slowpath: alloc_from_global");
+        
         self.return_block();
 
         loop {

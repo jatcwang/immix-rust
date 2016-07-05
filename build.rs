@@ -1,7 +1,7 @@
 extern crate gcc;
 
 fn main() {
-    gcc::compile_library("libgc_clib.a", &["src/heap/gc/clib.c"]);
+    gcc::compile_library("libgc_clib_x64.a", &["src/heap/gc/clib_x64.c"]);
     
     if cfg!(target_os = "linux") {
         gcc::Config::new()

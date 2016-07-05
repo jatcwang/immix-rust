@@ -9,8 +9,9 @@ build = "build.rs"
 git = "https://github.com/alexcrichton/gcc-rs"
 
 [lib]
-name = "mylib"
+name = "immix_rust"
 path = "src/lib.rs"
+crate-type = ["dylib"]
 
 [[bin]]
 
@@ -35,3 +36,4 @@ lazy_static = "0.1.15"
 log = "0.3.5"
 aligned_alloc = "0.1.2"
 crossbeam = "0.2.8"
+simple_logger = "0.4.0"
