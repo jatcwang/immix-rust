@@ -40,11 +40,11 @@ pub struct ImmixMutatorLocal {
     limit     : Address,
     line      : usize,
     
+    // globally accessible per-thread fields
+    global    : Arc<ImmixMutatorGlobal>,
+    
     space     : Arc<ImmixSpace>,
     block     : Option<Box<ImmixBlock>>,
-    
-    // globally accessible per-thread fields
-    global    : Arc<ImmixMutatorGlobal>
 }
 
 pub struct ImmixMutatorGlobal {
@@ -113,7 +113,8 @@ impl ImmixMutatorLocal {
     }
     
     #[inline(never)]
-    fn yieldpoint_slow(&mut self) {
+    pub fn yieldpoint_slow(&mut self) {
+        trace!("Mutator{}: yieldpoint triggered, slow path", self.id);
         gc::sync_barrier(self);
     }
     
@@ -148,7 +149,7 @@ impl ImmixMutatorLocal {
     }
     
     #[inline(never)]
-    fn try_alloc_from_local(&mut self, size : usize, align: usize) -> Address {
+    pub fn try_alloc_from_local(&mut self, size : usize, align: usize) -> Address {
         // println!("Trying to allocate from local");
     		
         if self.line < immix::LINES_IN_BLOCK {
@@ -190,7 +191,7 @@ impl ImmixMutatorLocal {
     }
     
     fn alloc_from_global(&mut self, size: usize, align: usize) -> Address {
-        trace!("slowpath: alloc_from_global");
+        trace!("Mutator{}: slowpath: alloc_from_global", self.id);
         
         self.return_block();
 

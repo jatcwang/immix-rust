@@ -1,14 +1,16 @@
 #include <pthread.h>
+#include <stdio.h>
 #include "immix_rust.h"
 
 #define N_ALLOCATION_THREADS 5
 
 void* new_allocation_thread(void*);
+void allocation_once(struct Mutator* m);
 void allocation_loop(struct Mutator* m);
 
 int main() {
     // init gc with size of immix space and large object space, and number of gc threads
-    gc_init(1 << 20, 1 << 20, 8);
+    gc_init(100 << 20, 100 << 20, 8);
 
     pthread_t threads[N_ALLOCATION_THREADS];
     int i;
@@ -37,6 +39,25 @@ void* new_allocation_thread(void* arg) {
     drop_mutator(m);
 
     return NULL;
+}
+
+void print_mutator(struct Mutator* m) {
+    printf("mutator:\n");
+    printf("id    =%lld\n", m->id);
+    printf("space =0x%llx\n", m->space_start);
+    printf("cursor=0x%llx\n", m->cursor);
+    printf("limit =0x%llx\n", m->limit);
+    printf("yield?=%d\n", *(m->yield));
+}
+
+void allocation_once(struct Mutator* m) {
+    print_mutator(m);
+    uint64_t addr = alloc(&m, 32, 8);
+    printf("RETURN1 = %llx\n", addr);
+    print_mutator(m);
+    addr = alloc(&m, 32, 8);
+    printf("RETURN2 = %llx\n", addr);
+    print_mutator(m);
 }
 
 void allocation_loop(struct Mutator* m) {

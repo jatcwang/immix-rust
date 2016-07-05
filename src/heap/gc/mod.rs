@@ -62,6 +62,8 @@ pub fn init_get_roots(get_roots: Box<Fn()->Vec<ObjectReference> + Sync + Send>) 
 }
 
 pub fn trigger_gc() {
+    trace!("Triggering GC...");
+    
     for mut m in MUTATORS.write().unwrap().iter_mut() {
         if m.is_some() {
             m.as_mut().unwrap().set_take_yield(true);
@@ -125,9 +127,7 @@ pub fn stack_scan() -> Vec<ObjectReference> {
     
     let roots_from_registers = ret.len() - roots_from_stack;
     
-    if cfg!(debug_assertions) {
-        println!("roots: {} from stack, {} from registers", roots_from_stack, roots_from_registers);
-    }
+    trace!("roots: {} from stack, {} from registers", roots_from_stack, roots_from_registers);
     
     ret
 }
@@ -136,9 +136,7 @@ pub fn stack_scan() -> Vec<ObjectReference> {
 pub fn sync_barrier(mutator: &mut ImmixMutatorLocal) {
     let controller_id = CONTROLLER.compare_and_swap(-1, mutator.id() as isize, Ordering::SeqCst);
     
-    if cfg!(debug_assertions) {
-        println!("saw the controller is {}", controller_id);
-    }
+    trace!("Mutator{} saw the controller is {}", mutator.id(), controller_id);
     
     // prepare the mutator for gc - return current block (if it has)
     mutator.prepare_for_gc();
@@ -163,18 +161,17 @@ pub fn sync_barrier(mutator: &mut ImmixMutatorLocal) {
         // wait for all mutators to be blocked
         let &(ref lock, ref cvar) = &*STW_COND.clone();
         let mut count = 0;
-        if cfg!(debug_assertions) {
-            println!("expect {} mutators to park", *N_MUTATORS.read().unwrap() - 1);
-        }
+        
+        trace!("expect {} mutators to park", *N_MUTATORS.read().unwrap() - 1);
         while count < *N_MUTATORS.read().unwrap() - 1 {
             let new_count = {*lock.lock().unwrap()};
             if new_count != count {				
                 count = new_count;
-                if cfg!(debug_assertions) {
-                    println!("count = {}", count);
-                }
+                trace!("count = {}", count);
             }
         }
+        
+        trace!("everyone stopped, gc will start");
         
         // roots->trace->sweep
         gc();
@@ -213,9 +210,7 @@ pub static GC_COUNT : atomic::AtomicUsize = atomic::ATOMIC_USIZE_INIT;
 fn gc() {
     GC_COUNT.store(GC_COUNT.load(atomic::Ordering::SeqCst) + 1, atomic::Ordering::SeqCst);
     
-    if cfg!(debug_assertions) {
-        println!("GC starts");
-    }
+    trace!("GC starts");
     
     // creates root deque
     let mut roots : &mut Vec<ObjectReference> = &mut ROOTS.write().unwrap();
@@ -228,12 +223,9 @@ fn gc() {
         start_trace(&mut roots, immix_space.clone(), lo_space.clone());
     }
     
-    if cfg!(debug_assertions) {
-        println!("trace done");
-    }
+    trace!("trace done");
     
     // sweep
-//    println!("sweep");
     {
         let mut gccontext = GC_CONTEXT.write().unwrap();
         let immix_space = gccontext.immix_space.as_mut().unwrap();
@@ -242,7 +234,7 @@ fn gc() {
     }
     
     objectmodel::flip_mark_state();
-//    println!("gc done");
+    trace!("GC finishes");
 }
 
 pub const MULTI_THREAD_TRACE_THRESHOLD : usize = 10;

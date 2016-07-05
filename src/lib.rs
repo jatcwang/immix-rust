@@ -77,16 +77,14 @@ extern "C" {
 }
 
 #[no_mangle]
-#[inline(always)]
-pub extern fn yieldpoint(mutator: &mut Box<ImmixMutatorLocal>) {
-    mutator.yieldpoint()
+#[inline(never)]
+pub extern fn yieldpoint_slow(mutator: &mut Box<ImmixMutatorLocal>) {
+    mutator.yieldpoint_slow()
 }
 
 #[no_mangle]
-#[inline(always)]
-pub extern fn alloc(mutator: &mut Box<ImmixMutatorLocal>, size: usize, align: usize) -> ObjectReference {
-    let ret = mutator.alloc(size, align);
-    trace!("allocated {} bytes: {:X}", size, ret);
+pub extern fn alloc_slow(mutator: &mut Box<ImmixMutatorLocal>, size: usize, align: usize) -> ObjectReference {
+    let ret = mutator.try_alloc_from_local(size, align);
     unsafe {ret.to_object_reference()}
 }
 
