@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "immix_rust.h"
 
 #define N_ALLOCATION_THREADS 5
@@ -10,7 +11,7 @@ void allocation_loop(struct Mutator* m);
 
 int main() {
     // init gc with size of immix space and large object space, and number of gc threads
-    gc_init(100 << 20, 100 << 20, 8);
+    gc_init(1 << 20, 1 << 20, 8);
 
     pthread_t threads[N_ALLOCATION_THREADS];
     int i;
@@ -61,8 +62,12 @@ void allocation_once(struct Mutator* m) {
 }
 
 void allocation_loop(struct Mutator* m) {
+    bool* yield = m->yield;
+    struct Mutator** m_ref = &m;
+
     while(1) {
-        yieldpoint(&m);
+        // yieldpoint
+        yieldpoint(yield, m_ref);
 
         uint64_t addr = alloc(&m, 32, 8);
     }

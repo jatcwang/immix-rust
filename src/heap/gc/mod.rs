@@ -150,7 +150,7 @@ pub fn sync_barrier(mutator: &mut ImmixMutatorLocal) {
     
     if controller_id != NO_CONTROLLER {
         // this thread will block
-        block_current_thread();
+        block_current_thread(mutator);
         
         // reset current mutator
         mutator.reset();
@@ -180,7 +180,9 @@ pub fn sync_barrier(mutator: &mut ImmixMutatorLocal) {
         CONTROLLER.store(NO_CONTROLLER, Ordering::SeqCst);
         for mut t in MUTATORS.write().unwrap().iter_mut() {
             if t.is_some() {
-                t.as_mut().unwrap().set_take_yield(false);
+                let t_mut = t.as_mut().unwrap();
+                t_mut.set_take_yield(false);
+                t_mut.set_still_blocked(false);
             }
         }
         // every mutator thread will reset themselves, so only reset current mutator here
@@ -195,14 +197,20 @@ pub fn sync_barrier(mutator: &mut ImmixMutatorLocal) {
     }
 }
 
-fn block_current_thread() {
+fn block_current_thread(mutator: &mut ImmixMutatorLocal) {
+    trace!("Mutator{} blocked", mutator.id());
+    
     let &(ref lock, ref cvar) = &*STW_COND.clone();
     let mut count = lock.lock().unwrap();
     *count += 1;
     
-    while *count != 0 {
+    mutator.global.set_still_blocked(true);
+    
+    while mutator.global.is_still_blocked() {
         count = cvar.wait(count).unwrap();
     }
+    
+    trace!("Mutator{} unblocked", mutator.id());
 }
 
 pub static GC_COUNT : atomic::AtomicUsize = atomic::ATOMIC_USIZE_INIT;

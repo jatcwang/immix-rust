@@ -64,5 +64,10 @@ fn alloc_loop(mutator: &mut ImmixMutatorLocal) {
 #[cfg(not(target_os = "linux"))]
 #[allow(unused_variables)]
 fn alloc_loop(mutator: &mut ImmixMutatorLocal) {
-    unimplemented!()  
+    for _ in 0..ALLOCATION_TIMES {
+        mutator.yieldpoint();
+        
+        let res = mutator.alloc(OBJECT_SIZE, OBJECT_ALIGN);
+        mutator.init_object(res, 0b1100_0011);  
+    }
 }

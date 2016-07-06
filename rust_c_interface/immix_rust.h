@@ -23,6 +23,13 @@ extern void yieldpoint_slow(struct Mutator** mutator);
 extern uint64_t alloc_slow(struct Mutator** mutator, uint64_t size, uint64_t align);
 extern uint64_t alloc_large(struct Mutator** mutator, uint64_t size);
 
+inline void yieldpoint(bool* take_yield, struct Mutator** m) __attribute__((always_inline));
+inline void yieldpoint(bool* take_yield, struct Mutator** m) {
+    if (*take_yield) {
+        yieldpoint_slow(m);
+    }
+}
+
 inline uint64_t align_up(uint64_t addr, uint64_t align) __attribute__((always_inline));
 inline uint64_t align_up(uint64_t addr, uint64_t align) {
     return (addr + align - 1) & ~(align - 1);
@@ -39,17 +46,5 @@ inline uint64_t alloc(struct Mutator** mutator, uint64_t size, uint64_t align) {
     else {
         self->cursor = end;
         return start;
-    }
-}
-
-inline void yieldpoint(struct Mutator** mutator) __attribute__((always_inline));
-inline void yieldpoint(struct Mutator** mutator) {
-    if (*((*mutator)->yield)) {
-        yieldpoint_slow(mutator);
-
-        if (*((*mutator)->yield)) {
-            printf("Mutator%lld.yield is still true after GC", (*mutator)->id);
-            exit(1);
-        }
     }
 }

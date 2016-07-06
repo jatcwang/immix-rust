@@ -41,14 +41,15 @@ pub struct ImmixMutatorLocal {
     line      : usize,
     
     // globally accessible per-thread fields
-    global    : Arc<ImmixMutatorGlobal>,
+    pub global    : Arc<ImmixMutatorGlobal>,
     
     space     : Arc<ImmixSpace>,
     block     : Option<Box<ImmixBlock>>,
 }
 
 pub struct ImmixMutatorGlobal {
-    take_yield : AtomicBool
+    take_yield : AtomicBool,
+    still_blocked : AtomicBool
 }
 
 impl ImmixMutatorLocal {
@@ -250,7 +251,18 @@ impl ImmixMutatorLocal {
 
 impl ImmixMutatorGlobal {
     pub fn new() -> ImmixMutatorGlobal {
-        ImmixMutatorGlobal {take_yield: AtomicBool::new(false)}
+        ImmixMutatorGlobal {
+            take_yield: AtomicBool::new(false),
+            still_blocked: AtomicBool::new(false)
+        }
+    }
+    
+    #[inline(always)]
+    pub fn is_still_blocked(&self) -> bool {
+        self.still_blocked.load(Ordering::SeqCst)
+    }
+    pub fn set_still_blocked(&self, b : bool) {
+        self.still_blocked.store(b, Ordering::SeqCst);
     }
     
     pub fn set_take_yield(&self, b : bool) {

@@ -33,7 +33,8 @@ lazy_static! {
 
 #[no_mangle]
 pub extern fn gc_init(immix_size: usize, lo_size: usize, n_gcthreads: usize) {
-    simple_logger::init_with_level(log::LogLevel::Trace).ok();
+    // set this line to turn on certain level of debugging info
+//    simple_logger::init_with_level(log::LogLevel::Trace).ok();
     
     // init space size
     heap::IMMIX_SPACE_SIZE.store(immix_size, Ordering::SeqCst);
@@ -77,9 +78,22 @@ extern "C" {
 }
 
 #[no_mangle]
+#[inline(always)]
+pub extern fn yieldpoint(mutator: &mut Box<ImmixMutatorLocal>) {
+    mutator.yieldpoint();
+}
+
+#[no_mangle]
 #[inline(never)]
 pub extern fn yieldpoint_slow(mutator: &mut Box<ImmixMutatorLocal>) {
     mutator.yieldpoint_slow()
+}
+
+#[no_mangle]
+#[inline(always)]
+pub extern fn alloc(mutator: &mut Box<ImmixMutatorLocal>, size: usize, align: usize) -> ObjectReference {
+    let addr = mutator.alloc(size, align);
+    unsafe {addr.to_object_reference()}
 }
 
 #[no_mangle]
