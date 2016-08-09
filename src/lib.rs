@@ -12,6 +12,7 @@ pub mod common;
 pub mod objectmodel;
 pub mod heap;
 
+pub use heap::immix::ImmixMutatorLocal as Mutator;
 use common::ObjectReference;
 use std::sync::Arc;
 use std::sync::RwLock;

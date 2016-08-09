@@ -55,6 +55,10 @@ impl Address {
         Address((self.0 + align - 1) & !(align - 1))
     }
     
+    pub fn is_aligned_to(&self, align: usize) -> bool {
+        self.0 % align == 0
+    }
+    
     pub fn memset(&self, char: u8, length: usize) {
         let mut cur : *mut u8 = self.0 as *mut u8;
         for _ in 0..length {
@@ -121,6 +125,12 @@ impl fmt::Display for Address {
     }
 }
 
+impl fmt::Debug for Address {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:X}", self.0)
+    }
+}
+
 #[derive(Copy, Clone, Eq, Hash)]
 pub struct ObjectReference (usize);
 
@@ -163,6 +173,12 @@ impl fmt::UpperHex for ObjectReference {
 }
 
 impl fmt::Display for ObjectReference {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:X}", self.0)
+    }
+}
+
+impl fmt::Debug for ObjectReference {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:X}", self.0)
     }
