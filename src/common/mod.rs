@@ -121,13 +121,13 @@ impl fmt::UpperHex for Address {
 
 impl fmt::Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:X}", self.0)
+        write!(f, "0x{:X}", self.0)
     }
 }
 
 impl fmt::Debug for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:X}", self.0)
+        write!(f, "0x{:X}", self.0)
     }
 }
 
@@ -174,13 +174,13 @@ impl fmt::UpperHex for ObjectReference {
 
 impl fmt::Display for ObjectReference {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:X}", self.0)
+        write!(f, "0x{:X}", self.0)
     }
 }
 
 impl fmt::Debug for ObjectReference {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:X}", self.0)
+        write!(f, "0x{:X}", self.0)
     }
 }
 
